@@ -1,27 +1,37 @@
 from accesskey import *
-from TIME import *
+import datecompare
 import boto3
-import datetime
-from config import *
+import config
 import logging
 
+#config模块配置信息
+conf = config.Config()
+Region_name = conf.Region_name
+Key_Life = conf.KEY_LIFE
+USER_NAME = conf.USER_NAME
+
+
 logging.getLogger().setLevel(logging.INFO)
-logging.info('Region is : {}'.format(Region_name))
-logging.info('UserName is : {}'.format(USER_NAME))
-logging.info('Key_life is : {}'.format(KEY_LIFE))
+
+
 
 #当前系统时间
-now_Time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
+now_Time =  datecompare.get_time()
 logging.info('System time now is:{}'.format(now_Time))
 
+
 #新建实例
-acc = AK(Region_name)
+acc = Accesskey(Region_name)
 
-#T E S T
 
-list = acc.get_key_list(USER_NAME)
-print(list)
 
+def run():
+    acc = Accesskey(Region_name)
+    list = acc.get_key_list(USER_NAME)
+    print(list)
+
+if __name__ == '__main__':
+    run()
 
 
 

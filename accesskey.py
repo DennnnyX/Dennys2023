@@ -1,13 +1,13 @@
 import boto3
 import logging
 from botocore.exceptions import ClientError
-from TIME import *
+import datecompare
 import datetime
+import config
 
-#系统时间
-now_Time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
 
-class AK():
+
+class Accesskey():
     #构造函数
     def __init__(self,Region_name:str)->None:
         self.client = boto3.client('iam',region_name = Region_name)
@@ -23,10 +23,10 @@ class AK():
             logging.error(e)
             
         
-    #以列表形式输出
+    #以列表形式输出指定用户的accesskey
     def get_key_list(self,username:str)->dict:
-        res = AK.view_access_key(self,username)
-        Metadata = res['AccessKeyMetadata']
+        res = Accesskey.view_access_key(self,username)
+        Metadata:list = res['AccessKeyMetadata']
         list = []
         for i in Metadata:
             id = i['AccessKeyId']
@@ -66,17 +66,18 @@ class AK():
             #i['CreateDate']是datetime.datetime类型
             key_time:str = i['CreateDate'].strftime('%Y-%m-%d %H:%M:%S') #把类型从datetime转为string类型
             logging.info('This key is created at: {}'.format(key_time))
-            diff:int = date_compare(now_Time,key_time) #计算key的创建日期和当前系统时间的天数差值
+            now_Time = datecompare.get_time()
+            diff:int = datecompare.date_compare(now_Time,key_time) #计算key的创建日期和当前系统时间的天数差值
             logging.info('Key life is:',diff,'days')
             #业务逻辑
             if diff >= life:
                 print('Update this Key')
-                AK.Inactive_key_status(self,username,i['AccessKeyId'])
+                Accesskey.Inactive_key_status(self,username,i['AccessKeyId'])
             else:
                 print('No action is needed')
             
     #更新key的状态为Inactive
-    def Inactive_key_status(self,username,access_key):
+    def inactive_key_status(self,username,access_key)->None:
         self.client.update_access_key(
             UserName = username,
             AccessKeyId = access_key,
@@ -85,7 +86,7 @@ class AK():
         logging.info('The key {}'.format(access_key),'is Active')
 
     #更新key的状态为Active
-    def Active_key_status(self,username,access_key):
+    def active_key_status(self,username,access_key)->None:
         self.client.update_access_key(
             UserName = username,
             AccessKeyId = access_key,
@@ -103,7 +104,8 @@ class AK():
             for i in dict:
                 if i['AccessKeyId'] == access_key:
                     key_time:str = i['CreateDate'].strftime('%Y-%m-%d %H:%M:%S')
-                    diff:int = date_compare(now_Time,key_time)
+                    now_Time = datecompare.get_time()
+                    diff:int = datecompare.date_compare(now_Time,key_time)
                     logging.info('The keys life is : {}'.format(diff))
                     return diff
         except ClientError as e:
@@ -111,17 +113,17 @@ class AK():
     
     #当前这个key已经超时，需要删除此key再重新生成一个key
     def generate_access_key(self,username:str,access_key:str)->None:
-        AK.delete_access_key(self,username,access_key)
-        AK.create_access_key(self,username)
+        Accesskey.delete_access_key(self,username,access_key)
+        Accesskey.create_access_key(self,username)
         logging.info('A new key has been created for User {}'.format(username))
 
-    
-    def rotation_access_key(self,username:str,life:int):
-        list = AK.get_key_list(self,username)
-        for i in list:
-            ans:int = AK.get_key_life(self,username,i)
+    #对key进行更新
+    def rotation_access_key(self,username:str,life:int)->None:
+        li = Accesskey.get_key_list(self,username)
+        for i in li:
+            ans:int = Accesskey.get_key_life(self,username,i)
             if ans >= life:
-                AK.generate_access_key(self,username,i)
+                Accesskey.generate_access_key(self,username,i)
         
         
 
