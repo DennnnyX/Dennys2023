@@ -1,6 +1,5 @@
-from accesskey import *
+import accesskey
 import datecompare
-import boto3
 import config
 import logging
 
@@ -21,12 +20,12 @@ logging.info('System time now is:{}'.format(now_Time))
 
 
 #新建实例
-acc = Accesskey(Region_name)
+acc = accesskey.Accesskey(Region_name)
 
 
 
 def run():
-    acc = Accesskey(Region_name)
+    acc = accesskey.Accesskey(Region_name)
     list = acc.get_key_list(USER_NAME)
     print(list)
 
