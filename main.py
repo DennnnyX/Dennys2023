@@ -25,9 +25,10 @@ acc = accesskey.Accesskey(Region_name)
 
 
 def run():
-    acc = accesskey.Accesskey(Region_name)
-    list = acc.get_key_list(USER_NAME)
-    print(list)
+    print('hello python')
+    #acc = accesskey.Accesskey(Region_name)
+    #list = acc.get_key_list(USER_NAME)
+    #print(list)
 
 if __name__ == '__main__':
     run()
